@@ -1,0 +1,38 @@
+{
+  "name": "frontend-movierama-iasonasimakopoulos",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "rm -rf dist/*",
+    "cp:static-files": "cp src/index.html dist/index.html && cp -R src/static/ dist/static/",
+    "build:once": "npm run clean && npm run cp:static-files && tsc",
+    "watch-ts": "npm run clean && npm run cp:static-files && tsc --watch",
+    "serve": "node server.cjs",
+    "watch-dist": "npx browser-sync start --proxy 'localhost:4005' --files 'dist/**/*.*'",
+    "livereload": "concurrently \"npm run serve\" \"npm:watch-*\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JasonAsmk/Frontend-MovieRama-IasonAsimakopoulos.git"
+  },
+  "author": "Iason Asimakopoulos",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JasonAsmk/Frontend-MovieRama-IasonAsimakopoulos/issues"
+  },
+  "homepage": "https://github.com/JasonAsmk/Frontend-MovieRama-IasonAsimakopoulos#readme",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.1.1",
+    "@typescript-eslint/parser": "^7.1.1",
+    "browsersync": "^0.0.1-security",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "express": "^4.18.3",
+    "prettier": "3.2.5",
+    "typescript": "^5.4.2"
+  }
+}
