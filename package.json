@@ -7,7 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rm -rf dist/*",
-    "cp:static-files": "cp src/index.html dist/index.html && cp -R src/static/ dist/static/",
+    "cp:static-files": "cp src/index.html dist/index.html && cp -R src/static/ dist/static/ && cp -R src/assets/ dist/assets/",
     "build:once": "npm run clean && npm run cp:static-files && tsc",
     "watch-ts": "npm run clean && npm run cp:static-files && tsc --watch",
     "serve": "node server.cjs",

@@ -24,7 +24,7 @@ export class MovieApiService extends AbstractSingleton<MovieApiService> {
       const data = await response.json();
       data.results;
       return data.results.map((serverMovie: any) => ({
-        id: serverMovie.id,
+        id: serverMovie.id + '',
         posterUrl: serverMovie.poster_path,
         title: serverMovie.title,
         releaseDate: serverMovie.release_date,
@@ -46,7 +46,6 @@ export class MovieApiService extends AbstractSingleton<MovieApiService> {
         throw new Error(`HTTP error: ${response.status}`);
       }
       const data = await response.json();
-      console.log(data.genres);
       const genreMap = data.genres.reduce((map: any, genre: any) => {
         map.set(genre.id, genre.name);
         return map;

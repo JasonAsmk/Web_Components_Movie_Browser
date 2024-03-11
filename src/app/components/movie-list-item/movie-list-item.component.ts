@@ -13,7 +13,6 @@ export class MovieListItem extends HTMLElement {
 
   set movieData(data) {
     this._movieData = data;
-    console.log(data);
     this.render();
   }
 
@@ -28,7 +27,22 @@ export class MovieListItem extends HTMLElement {
   public render() {
     let listContent;
     if (!this._movieData) {
-      listContent = `<div class="skeleton"></div>`;
+      listContent = `
+      <li class="skeleton flex-container">
+          <div class="left-side-container">
+            <div class="skeleton-poster"></div>
+          </div>
+          <div class="right-side-container">
+            <div>
+              <div class="skeleton-title"></div>
+              <div class="skeleton-body">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+              </p>
+            </div>
+          </div>
+      </div>`;
     } else {
       const imageUrl = this._imageCDNUrl + this._movieData.posterUrl;
       const yearOfRelease = new Date(this._movieData.releaseDate).getFullYear();
@@ -37,14 +51,16 @@ export class MovieListItem extends HTMLElement {
       listContent = `
         <li class="flex-container">
           <div class="left-side-container">
-            <img src="${imageUrl}"/>
+            <img src="${imageUrl}" class="poster"/>
           </div>
           <div class="right-side-container">
-            <h2>${this._movieData.title} <span class="year-of-release">(${yearOfRelease})</span></h2>
-            <p>${this._movieData.overview}</p>
+            <div>
+              <h2>${this._movieData.title} <span class="year-of-release">(${yearOfRelease})</span></h2>
+              <p>${this._movieData.overview}</p>
+            </div>
             <div class="extra-info-container">
               <div class="genre-list">${genres}</div>
-              <div class="vote-average">${roundedAverage}</div>
+              <div class="vote-average">${roundedAverage}<img src="dist/assets/icons/star.svg" class="icon-star"/></div>
             </div>
           </div>
         </li>
@@ -57,17 +73,15 @@ export class MovieListItem extends HTMLElement {
           box-shadow: 0px 0px 8px -2px rgba(0,0,0,0.2);
           border-radius: 8px;
         }
-        .skeleton {
-          background-color: gray;
-        }
         .flex-container {
           display: flex;
           padding: 10px;
           border: solid 1px black;
           border-radius: 8px;
           gap: 10px;
+          background: white;
         }
-        img {
+        .poster {
           width: 90px;
           height: 135px;
           border-radius: 10px;
@@ -78,6 +92,8 @@ export class MovieListItem extends HTMLElement {
         }
         p {
           font-size: 12px;
+          margin: 0;
+          margin-top: 5px;
         }
         h2 {
           margin: 0;
@@ -95,6 +111,7 @@ export class MovieListItem extends HTMLElement {
         .right-side-container {
           display: flex;
           flex-direction: column;
+          justify-content: space-between;
         }
         .genre-list {
           gap: 10px;
@@ -106,7 +123,49 @@ export class MovieListItem extends HTMLElement {
             font-size: 10px;
             min-width: 20px;
             border-radius: 20px;
+            white-space: no-wrap;
           }
+        }
+        .icon-star {
+          height: 20px;
+          margin-bottom: 2px;
+        }
+        .vote-average {
+          gap: 3px;
+        }
+        .skeleton {
+          min-width: 600px;
+          height: 157px;
+        }
+        .skeleton-poster {
+          width: 90px;
+          height: 135px;
+          border-radius: 10px;
+          background-color: #E5E4E2	;
+        }
+
+        .skeleton-title,
+        .skeleton-body {
+          width: 478px;
+        }
+        .skeleton-title {
+          height: 20px;
+          margin-top: 12px;
+          background-color: #E5E4E2	;
+        }
+        .skeleton-body {
+          height: 100px;
+          display: flex;
+          flex-direction: column;
+          gap: 7px;
+          margin-top: 10px;
+        }
+        .skeleton-line {
+          height: 12px;
+          background-color: #E5E4E2	;
+        }
+        .skeleton-line:last-of-type {
+          width: 350px;
         }
       </style>
       <li>
