@@ -3,6 +3,21 @@ import { throttle } from '../../shared/helpers.js';
 
 export class HomePage extends HTMLElement {
   public shouldLoadMore = false;
+  public canFetchMore = true;
+
+  private _searchQuery: string;
+
+  public set searchQuery(value: string) {
+    if(this._searchQuery !== value) {
+      this.canFetchMore = true;
+    }
+    this._searchQuery = value;
+  };
+
+  public get searchQuery() {
+    return this._searchQuery;
+  };
+
   private _movieService: MovieService;
   constructor() {
     super();
@@ -18,6 +33,24 @@ export class HomePage extends HTMLElement {
     window.addEventListener('scroll', this.onScroll());
 
     this.render();
+
+    this.attachHostEventListeners();
+  }
+
+  attachHostEventListeners() {
+    // attaching some events to host element, so that we don't have to
+    // redo this allover after a full render
+    this.addEventListener('search', async (event: CustomEvent) => {
+      const query = event?.detail?.query;
+      if(query === this.searchQuery) return;
+      if(query)
+        this.searchForMovies(event.detail.query);
+      else {
+        this.searchQuery = '';
+        await this.resetToNowPlaying();
+        this.render();
+      }
+    });
   }
 
   disconnectedCallback() {
@@ -29,15 +62,44 @@ export class HomePage extends HTMLElement {
     return throttle(() => {
       const distanceFromBottom = document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
       if (distanceFromBottom < 200) {
-        console.log('load more!');
         this.loadMoreItems();
       }
     }, 300);
   }
 
   async loadMoreItems() {
-    await this._movieService.getChunkOfNowPlayingMovies();
+    if(!this.canFetchMore) return;
+
+    let itemsReceived: number;
+    if(this.searchQuery) {
+      itemsReceived = await this._movieService.getChunkOfQueriedMovies(this.searchQuery);
+    } else {
+      itemsReceived = await this._movieService.getChunkOfNowPlayingMovies();
+    }
+
+    this.canFetchMore = itemsReceived > 0;
     this.updateRenderedMovieList();
+  }
+
+  async searchForMovies(query: string) {
+    if(!query || query.trim() === '') {
+      this.searchQuery = '';
+    }
+    this.searchQuery = query;
+    await this._movieService.getChunkOfQueriedMovies(query);
+    this.clearViewAndScrollUp();
+    this.updateRenderedMovieList();
+  }
+
+  clearViewAndScrollUp() {
+    window.scrollTo(0,0);
+    const moviesList = this.shadowRoot.getElementById('moviesList');
+    moviesList.innerHTML = '';
+  }
+
+  async resetToNowPlaying() {
+    this.clearViewAndScrollUp();
+    await this._movieService.getChunkOfNowPlayingMovies();
   }
 
   updateRenderedMovieList() {
@@ -90,6 +152,11 @@ export class HomePage extends HTMLElement {
           max-width: 600px;
         }
         h1 {
+          padding: 10px 20px;
+          width: 187px;
+          margin: 0;
+        }
+        .header {
           background: repeating-linear-gradient(
             45deg,
             #DAF7A6,
@@ -103,11 +170,6 @@ export class HomePage extends HTMLElement {
             #900C3F 40px,
             #900C3F 50px
           );
-          padding: 10px 20px;
-          width: 100%;
-          margin: 0;
-        }
-        .header {
           position: fixed;
           width: 100%;
           box-shadow: 0px 16px 55px 10px rgba(255,255,255,1);
@@ -120,11 +182,18 @@ export class HomePage extends HTMLElement {
         #homepage {
           background: #FCF5E5;
         }
+        .flex-container {
+          display: flex;
+          flex-wrap: wrap;
+        }
       </style>
 
       <div id="homepage">
         <div class="header">
-          <h1>MovieRama</h1>
+          <div class=flex-container>
+            <h1>MovieRama</h1>
+            <movie-searchbar></movie-searchbar>
+          </div>
         </div>
         <ul id="moviesList"></ul>
       </div>

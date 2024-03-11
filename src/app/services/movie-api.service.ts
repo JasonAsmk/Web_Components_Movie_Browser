@@ -33,7 +33,7 @@ export class MovieApiService extends AbstractSingleton<MovieApiService> {
         overview: serverMovie.overview
       }));
     } catch (error) {
-      console.error('Could not fetch movies ', error);
+      console.error('Could not fetch movies: ', error);
       return [];
     }
   }
@@ -52,8 +52,32 @@ export class MovieApiService extends AbstractSingleton<MovieApiService> {
       }, new Map<number, string>());
       return genreMap;
     } catch (error) {
-      console.error('Could not fetch movies ', error);
+      console.error('Could not fetch movies: ', error);
       return new Map();
+    }
+  }
+
+  public async searchForMovieName(query: string, page?: number) {
+    const encodedQuery = encodeURIComponent(query);
+    const endpoint = this._baseUrl + `search/movie?api_key=${this._apiKey}&page=${page ?? 1}&query=${encodedQuery}`;
+    try {
+      const response = await fetch(endpoint);
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+      const data = await response.json();
+      return data.results.map((serverMovie: any) => ({
+        id: serverMovie.id + '',
+        posterUrl: serverMovie.poster_path,
+        title: serverMovie.title,
+        releaseDate: serverMovie.release_date,
+        genreIds: [...serverMovie.genre_ids],
+        voteAverage: serverMovie.vote_average,
+        overview: serverMovie.overview
+      }));
+    } catch (error) {
+      console.error('Could query for movie name: ', error);
+      return [];
     }
   }
 }
