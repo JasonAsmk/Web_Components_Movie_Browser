@@ -44,14 +44,21 @@ export class MovieListItem extends HTMLElement {
           </div>
       </div>`;
     } else {
-      const imageUrl = this._imageCDNUrl + this._movieData.posterUrl;
       const yearOfRelease = new Date(this._movieData.releaseDate).getFullYear();
       const genres = this._movieData.genres.map(genre => `<div class="genre">${genre}</div>`).join('');
       const roundedAverage = Math.round(this._movieData.voteAverage * 10) / 10;
+
+      let poster;
+      if(this._movieData.posterUrl) {
+        const imageUrl = this._imageCDNUrl + this._movieData.posterUrl;
+        poster = `<img src="${imageUrl}" class="poster"/>`
+      } else {
+        poster = `<div class="no-image poster">No image</div>`
+      }
       listContent = `
         <li class="flex-container">
           <div class="left-side-container">
-            <img src="${imageUrl}" class="poster"/>
+          ${poster}
           </div>
           <div class="right-side-container">
             <div>
@@ -60,7 +67,7 @@ export class MovieListItem extends HTMLElement {
             </div>
             <div class="extra-info-container">
               <div class="genre-list">${genres}</div>
-              <div class="vote-average">${roundedAverage}<img src="dist/assets/icons/star.svg" class="icon-star"/></div>
+              <div class="vote-average">${ roundedAverage == 0 ? '-': roundedAverage }<img src="dist/assets/icons/star.svg" class="icon-star"/></div>
             </div>
           </div>
         </li>
@@ -87,6 +94,11 @@ export class MovieListItem extends HTMLElement {
           border-radius: 10px;
           box-shadow: 0px 10px 15px 7px rgba(0,0,0,0.1);
         }
+        .no-image {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
         .year-of-release {
           font-size: 13px;
         }
@@ -94,6 +106,11 @@ export class MovieListItem extends HTMLElement {
           font-size: 12px;
           margin: 0;
           margin-top: 5px;
+
+          display: -webkit-box;
+          -webkit-line-clamp: 4;
+          -webkit-box-orient: vertical;
+          overflow-y: hidden
         }
         h2 {
           margin: 0;
