@@ -1,4 +1,3 @@
-import { MovieApiService } from '../../services/movie-api.service.js';
 import { MovieService } from '../../services/movie.service.js';
 import { throttle } from '../../shared/helpers.js';
 
@@ -16,16 +15,17 @@ export class HomePage extends HTMLElement {
     await this._movieService.getGenreMap();
     await this._movieService.getChunkOfNowPlayingMovies();
 
-    window.addEventListener('scroll', this.loadOnScrollEnd());
+    window.addEventListener('scroll', this.onScroll());
 
     this.render();
   }
 
   disconnectedCallback() {
-    window.removeEventListener('scroll', this.loadOnScrollEnd(), false);
+    window.removeEventListener('scroll', this.onScroll(), false);
   }
 
-  loadOnScrollEnd() {
+  onScroll() {
+    // events go crazy if not throttled
     return throttle(() => {
       const distanceFromBottom = document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
       if (distanceFromBottom < 200) {
@@ -49,9 +49,9 @@ export class HomePage extends HTMLElement {
         // Append only new movies
         const movieItem = document.createElement('movie-list-item');
         movieItem.setAttribute('data-id', movie.id);
-        movieItem.movieData = {
+        (<any>movieItem).movieData = {
           ...movie,
-          genreIds: movie.genreIds.map(genreId => this._movieService.genreMap.get(genreId))
+          genres: movie.genreIds.map(genreId => this._movieService.genreMap.get(genreId))
         };
         moviesList.appendChild(movieItem);
       }
@@ -61,11 +61,11 @@ export class HomePage extends HTMLElement {
   render() {
     const items = this._movieService.movies.map(movie => ({
       ...movie,
-      genreIds: movie.genreIds.map(genreId => this._movieService.genreMap.get(genreId))
+      genres: movie.genreIds.map(genreId => this._movieService.genreMap.get(genreId))
     }));
     const itemListFragment = document.createDocumentFragment();
 
-    const movieItems = items.map(item => {
+    items.map(item => {
       const movieItem = document.createElement('movie-list-item');
       movieItem.setAttribute('data-id', item.id);
       (<any>movieItem).movieData = item;

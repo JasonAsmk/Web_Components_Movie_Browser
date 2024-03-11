@@ -2,7 +2,7 @@ import { appConfig } from '../../app.config.js';
 import { IMovie } from '../../models/movie.model.js';
 
 export class MovieListItem extends HTMLElement {
-  private _movieData: IMovie;
+  private _movieData: IMovie & { genres: string[] };
   private _imageCDNUrl: string;
 
   constructor() {
@@ -46,7 +46,7 @@ export class MovieListItem extends HTMLElement {
     } else {
       const imageUrl = this._imageCDNUrl + this._movieData.posterUrl;
       const yearOfRelease = new Date(this._movieData.releaseDate).getFullYear();
-      const genres = this._movieData.genreIds.map(genre => `<div class="genre">${genre}</div>`).join('');
+      const genres = this._movieData.genres.map(genre => `<div class="genre">${genre}</div>`).join('');
       const roundedAverage = Math.round(this._movieData.voteAverage * 10) / 10;
       listContent = `
         <li class="flex-container">

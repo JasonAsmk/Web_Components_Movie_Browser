@@ -1,5 +1,5 @@
 export const throttle = (func: Function, timeout = 250) => {
-  let timer: number;
+  let timer;
 
   return (...args) => {
     const deferred = () => {
@@ -12,7 +12,7 @@ export const throttle = (func: Function, timeout = 250) => {
 };
 
 export const debounce = (func: Function, timeout = 250) => {
-  let timer: number;
+  let timer;
 
   return (...args) => {
     const deferred = () => {

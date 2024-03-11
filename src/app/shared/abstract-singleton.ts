@@ -10,4 +10,11 @@ export abstract class AbstractSingleton<T> {
     }
     return AbstractSingleton.instances.get(className);
   }
+
+  static resetInstance<T>(this: new () => T): void {
+    const className = this.name;
+    if (AbstractSingleton.instances.has(className)) {
+      AbstractSingleton.instances.delete(className);
+    }
+  }
 }
