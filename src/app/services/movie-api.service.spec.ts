@@ -1,17 +1,13 @@
 import { appConfig } from '../app.config';
 import { MovieApiService } from './movie-api.service';
 
-global.fetch = jest.fn(() =>
-  Promise.resolve({
-    ok: true,
-    json: () => Promise.resolve({ results: [], genres: [] })
-  })
-) as jest.Mock;
+global.fetch = jest.fn(() => undefined) as jest.Mock;
 
-appConfig; // :( linter dictatorship sorry
+appConfig; // need to import this for jest.mock but it's no used causing linter hicups :(
 jest.mock('../app.config', () => ({
   appConfig: {
-    movieDBAPIKey: 'test-api-key'
+    movieDBAPIKey: 'test-api-key',
+    movieDBAPIBaseUrl: 'https://api.moobies.org/3/'
   }
 }));
 
@@ -48,6 +44,35 @@ describe('MovieApiService', () => {
     expect(movies[0].title).toEqual('Mortal Kombat 23');
     expect(movies[0].id).toEqual('1');
   });
+
+  it('queries and fetches movies', async () => {
+    (fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          results: [
+            {
+              id: 1,
+              poster_path: '/abcdef123456789.jpg',
+              title: 'Mortal Kombat 23',
+              release_date: '2024-02-25',
+              genre_ids: [1, 2],
+              vote_average: 9.982,
+              overview: `After Liu Kang's 5th resurrection warriors are once again called to defend the earth realm from Shao Kahn. Will the God council intervene this time? Fight or lose your soul.`
+            }
+          ]
+        })
+    });
+
+    const movieApiService = MovieApiService.getInstance();
+    const movies = await movieApiService.searchForMovieName('Mortal Kombat');
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith("https://api.moobies.org/3/search/movie?api_key=test-api-key&page=1&query=Mortal%20Kombat");
+    expect(movies.length).toBe(1);
+    expect(movies[0].title).toEqual('Mortal Kombat 23');
+    expect(movies[0].id).toEqual('1');
+  })
 
   it('fetches movie genres', async () => {
     (fetch as jest.Mock).mockResolvedValueOnce({

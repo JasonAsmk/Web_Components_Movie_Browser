@@ -3,15 +3,15 @@ import { IMovie } from '../models/movie.model';
 import { AbstractSingleton } from '../shared/abstract-singleton.js';
 
 export class MovieApiService extends AbstractSingleton<MovieApiService> {
-  private _baseUrl = 'https://api.themoviedb.org/3/';
+  private _baseUrl;
   private _apiKey;
 
   constructor() {
     super();
-    console.log('Movie api created');
 
     // in a real scenario this has to be safer
     this._apiKey = appConfig.movieDBAPIKey;
+    this._baseUrl = appConfig.movieDBAPIBaseUrl;
   }
 
   public async getNowPlayingMovies(page?: number): Promise<IMovie[]> {

@@ -1,9 +1,75 @@
 import { MovieService } from '../../services/movie.service.js';
 import { throttle } from '../../shared/helpers.js';
 
+// cloning templates is faster than everytime parsing html in render
+const template = document.createElement('template');
+template.innerHTML = `
+      <style>
+        ul {
+          list-style-type: none;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          gap: 18px;
+
+          padding-left: 0;
+          padding-top: 80px;
+        }
+        movie-list-item {
+          display: flex;
+          max-width: 600px;
+        }
+        h1 {
+          padding: 10px 20px;
+          width: 187px;
+          margin: 0;
+        }
+        .header {
+          background: repeating-linear-gradient(
+            45deg,
+            #DAF7A6,
+            #DAF7A6 10px,
+            #FFC300 10px,
+            #FFC300 20px,
+            #FF5733 20px,
+            #FF5733 30px,
+            #C70039 30px,
+            #C70039 40px,
+            #900C3F 40px,
+            #900C3F 50px
+          );
+          position: fixed;
+          width: 100%;
+          box-shadow: 0px 16px 55px 10px rgba(255,255,255,1);
+        }
+        #moviesList {
+          margin-top: 0;
+          margin-bottom: 0;
+          padding-bottom: 20px;
+        }
+        #homepage {
+          background: #FCF5E5;
+        }
+        .flex-container {
+          display: flex;
+          flex-wrap: wrap;
+        }
+      </style>
+
+      <div id="homepage">
+        <div class="header">
+          <div class=flex-container>
+            <h1>MovieRama</h1>
+            <movie-searchbar></movie-searchbar>
+          </div>
+        </div>
+        <ul id="moviesList"></ul>
+      </div>
+    `;
+
 export class HomePage extends HTMLElement {
-  public shouldLoadMore = false;
-  public canFetchMore = true;
+  public canFetchMore = true;  // signifies if api calls can return more movies, if false stops spamming api calls
 
   private _searchQuery: string;
 
@@ -41,7 +107,7 @@ export class HomePage extends HTMLElement {
     // attaching some events to host element, so that we don't have to
     // redo this allover after a full render
     this.addEventListener('search', async (event: CustomEvent) => {
-      const query = event?.detail?.query;
+      let query = event?.detail?.query?.trim();
       if(query === this.searchQuery) return;
       if(query)
         this.searchForMovies(event.detail.query);
@@ -134,70 +200,9 @@ export class HomePage extends HTMLElement {
       itemListFragment.appendChild(movieItem);
     });
 
-    this.shadowRoot.innerHTML = `
-      <style>
-        ul {
-          list-style-type: none;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          gap: 18px;
-
-          padding-left: 0;
-          padding-top: 80px;
-        }
-        movie-list-item {
-          display: flex;
-          max-width: 600px;
-        }
-        h1 {
-          padding: 10px 20px;
-          width: 187px;
-          margin: 0;
-        }
-        .header {
-          background: repeating-linear-gradient(
-            45deg,
-            #DAF7A6,
-            #DAF7A6 10px,
-            #FFC300 10px,
-            #FFC300 20px,
-            #FF5733 20px,
-            #FF5733 30px,
-            #C70039 30px,
-            #C70039 40px,
-            #900C3F 40px,
-            #900C3F 50px
-          );
-          position: fixed;
-          width: 100%;
-          box-shadow: 0px 16px 55px 10px rgba(255,255,255,1);
-        }
-        #moviesList {
-          margin-top: 0;
-          margin-bottom: 0;
-          padding-bottom: 20px;
-        }
-        #homepage {
-          background: #FCF5E5;
-        }
-        .flex-container {
-          display: flex;
-          flex-wrap: wrap;
-        }
-      </style>
-
-      <div id="homepage">
-        <div class="header">
-          <div class=flex-container>
-            <h1>MovieRama</h1>
-            <movie-searchbar></movie-searchbar>
-          </div>
-        </div>
-        <ul id="moviesList"></ul>
-      </div>
-    `;
+    // reset and clone preparsed template
+    this.shadowRoot.innerHTML = '';
+    this.shadowRoot.appendChild(template.content.cloneNode(true));
 
     const moviesList = this.shadowRoot.getElementById('moviesList');
     moviesList.appendChild(itemListFragment);

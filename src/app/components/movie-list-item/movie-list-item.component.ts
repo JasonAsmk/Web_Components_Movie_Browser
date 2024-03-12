@@ -79,8 +79,10 @@ export class MovieListItem extends HTMLElement {
         :host {
           box-shadow: 0px 0px 8px -2px rgba(0,0,0,0.2);
           border-radius: 8px;
+          width: 100%;
         }
         .flex-container {
+          width: 100%;
           display: flex;
           padding: 10px;
           border: solid 1px black;
@@ -126,6 +128,7 @@ export class MovieListItem extends HTMLElement {
           justify-content: space-between;
         }
         .right-side-container {
+          width: 100%;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
