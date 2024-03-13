@@ -13,6 +13,10 @@ describe('MovieListItem', () => {
     document.body.innerHTML = '<movie-list-item></movie-list-item>';
   });
 
+  afterEach(() => {
+    document.body.innerHTML = '';
+  })
+
   it('is defined', () => {
     const element = document.querySelector('movie-list-item');
     expect(element).toBeDefined();

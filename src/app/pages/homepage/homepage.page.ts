@@ -99,7 +99,7 @@ export class HomePage extends HTMLElement {
     await this._movieService.getGenreMap();
     await this._movieService.getChunkOfNowPlayingMovies();
 
-    window.addEventListener('scroll', this.onScroll());
+    window.addEventListener('scroll', this.onScroll(), { passive: true });
 
     this.render();
 

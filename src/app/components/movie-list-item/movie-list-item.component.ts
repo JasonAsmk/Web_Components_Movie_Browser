@@ -1,5 +1,6 @@
 import { appConfig } from '../../app.config.js';
 import { IMovie } from '../../models/movie.model.js';
+import { MovieService } from '../../services/movie.service.js';
 
 export class MovieListItem extends HTMLElement {
   static get observedAttributes() {
@@ -7,13 +8,14 @@ export class MovieListItem extends HTMLElement {
   }
 
   private _movieData: IMovie & { genres: string[] };
+  private _movieService: MovieService;
   private _imageCDNUrl: string;
-  private _itemExpand = false;
 
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
     this._imageCDNUrl = appConfig.movieDBImageCDNUrl;
+    this._movieService = MovieService.getInstance();
   }
 
   set movieData(data) {
@@ -42,17 +44,35 @@ export class MovieListItem extends HTMLElement {
     }
   }
 
+  // don't forget to declare a new attribute in the observedAttributes getter above or it won't work
   attributeChangedCallback(name, oldValue, newValue) {
-    // don't forget to declare a new attribute in the observedAttributes getter above or it won't work
-    console.log(`name: ${name}, oldValue: ${oldValue}, newValue: ${newValue}`);
-    switch (name) {
-      case 'expand':
-        this._itemExpand = newValue;
-        break
-      default:
-        console.debug('unhandled property changed: ', name)
+    if (name === 'expand') {
+      this.toggleExpansion();
     }
-    this._itemExpand
+  }
+
+  toggleExpansion() {
+    let expansionContainer = this.shadowRoot.querySelector('.expansion-container');
+    if (this.hasAttribute('expand')) {
+      const handleTransitionEnd = () => {
+        if(this.hasAttribute('expand')) { // need to check again as it could be the wrong transition if(expansionContainer.hasChildNodes) expansionContainer.innerHTML = ''; // clear just in case
+          this.hydrateExpansionContainer(expansionContainer);
+        }
+        this.removeEventListener('transitionend', handleTransitionEnd);
+      }
+      this.addEventListener('transitionend', handleTransitionEnd, { passive: true })
+    } else {
+      expansionContainer.innerHTML = '';
+    }
+  }
+
+  // fill it up with a video, some reviews and suggestions yo!
+  async hydrateExpansionContainer(expansionContainer: Element) {
+    const youbuteVideo = await this._movieService.getBestMatchVideoDataForMovie(this._movieData.id);
+
+    const videoPreview = document.createElement('video-preview');
+    (<any>videoPreview).providerData = { provider: youbuteVideo.videoProvider, resourceId: youbuteVideo.key };
+    expansionContainer.appendChild(videoPreview);
   }
 
   render() {
@@ -86,23 +106,27 @@ export class MovieListItem extends HTMLElement {
       } else {
         poster = `<div class="no-image poster">No image</div>`
       }
+
       listContent = `
         <li class="flex-container">
-          <div class="left-side-container">
-          ${poster}
-          </div>
-          <div class="right-side-container">
-            <div>
-              <h2>${this._movieData.title} <span class="year-of-release">(${yearOfRelease})</span></h2>
-              <p>${this._movieData.overview}</p>
+          <div class="main-info-container">
+            <div class="left-side-container">
+              ${poster}
             </div>
-            <div class="extra-info-container">
-              <div class="genre-list">${genres}</div>
-              <div class="vote-average">${ roundedAverage == 0 ? '-': roundedAverage }<img src="dist/assets/icons/star.svg" class="icon-star"/></div>
+            <div class="right-side-container">
+              <div>
+                <h2>${this._movieData.title} <span class="year-of-release">(${yearOfRelease})</span></h2>
+                <p>${this._movieData.overview}</p>
+              </div>
+              <div class="extra-info-container">
+                <div class="genre-list">${genres}</div>
+                <div class="vote-average">${roundedAverage == 0 ? '-' : roundedAverage}<img src="dist/assets/icons/star.svg" class="icon-star"/></div>
+              </div>
             </div>
           </div>
+          <div class="expansion-container"></div>
         </li>
-        `;
+      `;
     }
 
     this.shadowRoot.innerHTML = `
@@ -132,11 +156,16 @@ export class MovieListItem extends HTMLElement {
         .flex-container {
           width: 100%;
           display: flex;
-          padding: 10px;
+          flex-direction: column;
           border: solid 1px black;
           border-radius: 8px;
-          gap: 10px;
           background: white;
+        }
+        .main-info-container {
+          display: flex;
+          height: 137px;
+          padding: 10px;
+          gap: 10px;
         }
         .poster {
           width: 90px;
@@ -239,6 +268,10 @@ export class MovieListItem extends HTMLElement {
         }
         .skeleton-line:last-of-type {
           width: 350px;
+        }
+        .expansion-container {
+          display: flex;
+          padding: 0 10px;
         }
       </style>
       <li>

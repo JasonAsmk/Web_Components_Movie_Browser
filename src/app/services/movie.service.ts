@@ -1,4 +1,5 @@
 import { IMovie } from '../models/movie.model.js';
+import { IVideo, VideoProvider, VideoType } from '../models/video.model.js';
 import { AbstractSingleton } from '../shared/abstract-singleton.js';
 import { MovieApiService } from './movie-api.service.js';
 
@@ -62,6 +63,19 @@ export class MovieService extends AbstractSingleton<MovieService> {
 
   public async getGenreMap() {
     this.genreMap = await this._movieApiService.getMovieGenres();
+  }
+
+  public async getBestMatchVideoDataForMovie(movieId: string): Promise<IVideo> {
+    if(!movieId) return null;
+    const videos: IVideo[] = await this._movieApiService.getVideoDataForMovie(movieId);
+    const youtubeVideos = videos.filter(v => v.videoProvider === VideoProvider.Youtube);
+    if(youtubeVideos.length === 0) return null;
+
+    // try to get a trailer if possible
+    const maybeTrailer = youtubeVideos.find(yv => yv.videoType === VideoType.Trailer);
+    if(maybeTrailer)
+      return maybeTrailer;
+    else return youtubeVideos[0]; // whatever anything will do I guess
   }
 
   private clearPagingStates() {

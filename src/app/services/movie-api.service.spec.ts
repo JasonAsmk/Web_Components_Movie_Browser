@@ -1,4 +1,5 @@
 import { appConfig } from '../app.config';
+import { VideoProvider, VideoType } from '../models/video.model';
 import { MovieApiService } from './movie-api.service';
 
 global.fetch = jest.fn(() => undefined) as jest.Mock;
@@ -92,5 +93,34 @@ describe('MovieApiService', () => {
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(genreMap.size).toBe(2);
     expect(genreMap.get(1)).toEqual('Thriller');
+  });
+
+  it('fetches video data for a movie id', async() => {
+    (fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          results: [
+            {
+              id: '123',
+              key: '60h6lpnSgck',
+              name: 'Infrastellar bloopers',
+              type: 'Featurette',
+              site: 'YouTube'
+            }
+          ]
+        })
+    });
+
+    const movieApiService = MovieApiService.getInstance();
+    const videos = await movieApiService.getVideoDataForMovie('321');
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(videos.length).toBe(1);
+    expect(videos[0].name).toEqual('Infrastellar bloopers');
+    expect(videos[0].id).toEqual('123');
+    expect(videos[0].key).toEqual('60h6lpnSgck');
+    expect(videos[0].videoType).toEqual(VideoType.Featurette);
+    expect(videos[0].videoProvider).toEqual(VideoProvider.Youtube);
   });
 });

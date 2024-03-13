@@ -1,3 +1,4 @@
+import { VideoProvider, VideoType } from '../models/video.model';
 import { MovieService } from './movie.service';
 
 jest.mock('./movie-api.service', () => {
@@ -35,7 +36,8 @@ jest.mock('./movie-api.service', () => {
         [2, 'Spoopy'],
         [3, 'Thriller']
       ])
-    )
+    ),
+    getVideoDataForMovie: jest.fn().mockResolvedValue([])
   })
 
   return { MovieApiService: mockObj };
@@ -115,6 +117,50 @@ describe('Movie::Service', () => {
       expect(sut.genreMap.size).toBe(3);
       expect(sut.genreMap.get(1)).toEqual('Horror');
     });
+  });
+
+  describe('getBestMatchVideoDataForMovie', () => {
+    it('returns null if no videos returned from api', async () => {
+      const mockMovieApiService = (<any>sut)._movieApiService;
+      jest.spyOn(mockMovieApiService, 'getVideoDataForMovie').mockResolvedValue(Promise.resolve([]))
+      const res = await sut.getBestMatchVideoDataForMovie('123');
+      expect(res).toEqual(null);
+    })
+
+    it('returns null if provided movie id is empty', async () => {
+      const res = await sut.getBestMatchVideoDataForMovie('');
+      expect(res).toEqual(null);
+    });
+
+    it('returns no video if no youtube video available', async () => {
+      const mockMovieApiService = (<any>sut)._movieApiService;
+      jest.spyOn(mockMovieApiService, 'getVideoDataForMovie').mockResolvedValue(Promise.resolve([
+        { id: '1', videoType: VideoType.BehindTheScenes, videoProvider: VideoProvider.Other, key: '111', name: 'best video' },
+        { id: '2', videoType: VideoType.Trailer, videoProvider: VideoProvider.Other, key: '222', name: 'Official trailer' },
+      ]))
+      const res = await sut.getBestMatchVideoDataForMovie('123');
+      expect(res).toEqual(null);
+    })
+
+    it('returns a trailer if there\'s one', async () => {
+      const mockMovieApiService = (<any>sut)._movieApiService;
+      jest.spyOn(mockMovieApiService, 'getVideoDataForMovie').mockResolvedValue(Promise.resolve([
+        { id: '1', videoType: VideoType.BehindTheScenes, videoProvider: VideoProvider.Youtube, key: '111', name: 'best video' },
+        { id: '2', videoType: VideoType.Trailer, videoProvider: VideoProvider.Youtube, key: '222', name: 'Official trailer' },
+      ]))
+      const res = await sut.getBestMatchVideoDataForMovie('123');
+      expect(res.name).toEqual('Official trailer');
+    })
+
+    it('returns anything if there\'s no trailer', async () => {
+      const mockMovieApiService = (<any>sut)._movieApiService;
+      jest.spyOn(mockMovieApiService, 'getVideoDataForMovie').mockResolvedValue(Promise.resolve([
+        { id: '1', videoType: VideoType.BehindTheScenes, videoProvider: VideoProvider.Youtube, key: '111', name: 'best video' },
+        { id: '2', videoType: VideoType.Clip, videoProvider: VideoProvider.Youtube, key: '222', name: 'Editors cut' },
+      ]))
+      const res = await sut.getBestMatchVideoDataForMovie('123');
+      expect(res.name).toEqual('best video');
+    })
   })
 
 });

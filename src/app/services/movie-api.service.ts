@@ -1,5 +1,6 @@
 import { appConfig } from '../app.config.js';
-import { IMovie } from '../models/movie.model';
+import { IMovie } from '../models/movie.model.js';
+import { IVideo, VideoProvider, VideoType } from '../models/video.model.js';
 import { AbstractSingleton } from '../shared/abstract-singleton.js';
 
 export class MovieApiService extends AbstractSingleton<MovieApiService> {
@@ -22,7 +23,6 @@ export class MovieApiService extends AbstractSingleton<MovieApiService> {
         throw new Error(`HTTP error: ${response.status}`);
       }
       const data = await response.json();
-      data.results;
       return data.results.map((serverMovie: any) => ({
         id: serverMovie.id + '',
         posterUrl: serverMovie.poster_path,
@@ -78,6 +78,39 @@ export class MovieApiService extends AbstractSingleton<MovieApiService> {
     } catch (error) {
       console.error('Could query for movie name: ', error);
       return [];
+    }
+  }
+
+  public async getVideoDataForMovie(movieId: string): Promise<IVideo[]> {
+    const endpoint = this._baseUrl + `movie/${movieId}/videos?api_key=${this._apiKey}`;
+    try {
+      const response = await fetch(endpoint);
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+      const data = await response.json();
+      return data.results.map((serverMovie) => ({
+        id: serverMovie.id + '',
+        key: serverMovie.key + '',
+        name: serverMovie.name,
+        videoType: this.mapServerToLocalVideoType(serverMovie.type),
+        videoProvider: serverMovie.site === 'YouTube' ? VideoProvider.Youtube : VideoProvider.Other
+      }));
+    } catch (error) {
+      console.error(`Could not fetch video links for movie id ${movieId}: `, error);
+      return [];
+    }
+  }
+
+
+  private mapServerToLocalVideoType(videoType: string): VideoType {
+    switch(videoType) {
+      case 'Clip': return VideoType.Clip
+      case 'Featurette': return VideoType.Featurette
+      case 'Teaser': return VideoType.Teaser
+      case 'BehindTheScenes': return VideoType.BehindTheScenes
+      case 'Trailer': return VideoType.Trailer
+      default: return VideoType.Other
     }
   }
 }
