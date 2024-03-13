@@ -2,8 +2,13 @@ import { appConfig } from '../../app.config.js';
 import { IMovie } from '../../models/movie.model.js';
 
 export class MovieListItem extends HTMLElement {
+  static get observedAttributes() {
+    return ['expand'];
+  }
+
   private _movieData: IMovie & { genres: string[] };
   private _imageCDNUrl: string;
+  private _itemExpand = false;
 
   constructor() {
     super();
@@ -22,9 +27,35 @@ export class MovieListItem extends HTMLElement {
 
   async connectedCallback() {
     this.render();
+
+    this.upgradeProperty('expand');
   }
 
-  public render() {
+  // if a user sets a property before the element is loaded
+  // we need to run through properties set them again after
+  // see https://web.dev/articles/custom-elements-best-practices#make_properties_lazy
+  upgradeProperty(prop) {
+    if(this.hasOwnProperty(prop)) {
+      let value = this[prop];
+      delete this[prop];
+      this[prop] = value;
+    }
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    // don't forget to declare a new attribute in the observedAttributes getter above or it won't work
+    console.log(`name: ${name}, oldValue: ${oldValue}, newValue: ${newValue}`);
+    switch (name) {
+      case 'expand':
+        this._itemExpand = newValue;
+        break
+      default:
+        console.debug('unhandled property changed: ', name)
+    }
+    this._itemExpand
+  }
+
+  render() {
     let listContent;
     if (!this._movieData) {
       listContent = `
@@ -80,6 +111,23 @@ export class MovieListItem extends HTMLElement {
           box-shadow: 0px 0px 8px -2px rgba(0,0,0,0.2);
           border-radius: 8px;
           width: 100%;
+
+          transition: max-width 0.2s ease-in, height 0.2s ease-in;
+          height: 157px;
+          max-width: 600px;
+        }
+        li {
+          transition: transform 0.1s ease-in;
+          cursor: pointer;
+        }
+        :host(:not([expand])) li:hover {
+          transform: scale3d(1.1, 1.1, 1);
+        }
+        :host([expand]) {
+          height: 75vh;
+          width: 100%;
+          max-width: 100%;
+
         }
         .flex-container {
           width: 100%;
@@ -116,11 +164,14 @@ export class MovieListItem extends HTMLElement {
         }
         h2 {
           margin: 0;
+          display: -webkit-box;
+          -webkit-line-clamp: 1;
+          -webkit-box-orient: vertical;
+          overflow: hidden
         }
         .genre-list,
         .vote-average,
-        .extra-info-container,
-        .left-side-container {
+        .extra-info-container{
           display: flex;
           align-items: center;
         }
@@ -135,6 +186,8 @@ export class MovieListItem extends HTMLElement {
         }
         .genre-list {
           gap: 10px;
+          row-gap: 3px;
+          flex-wrap: wrap;
           .genre {
             display: flex;
             justify-content: center;

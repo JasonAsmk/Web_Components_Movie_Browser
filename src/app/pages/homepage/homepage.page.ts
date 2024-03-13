@@ -26,6 +26,7 @@ template.innerHTML = `
           margin: 0;
         }
         .header {
+          z-index: 1;
           background: repeating-linear-gradient(
             45deg,
             #DAF7A6,
@@ -191,21 +192,32 @@ export class HomePage extends HTMLElement {
       genres: movie.genreIds.map(genreId => this._movieService.genreMap.get(genreId))
     }
     movieItem.setAttribute('data-id', itemData.id);
-    movieItem.addEventListener('click', (event) => {
-      // check if we have a list item open, then we need to close it
-      const expandedEl = this.shadowRoot.querySelector('movie-list-item[expand]');
-      if(expandedEl && expandedEl.getAttribute('data-id') !== itemData.id) {
-        expandedEl.removeAttribute('expand');
-      }
-      if(movieItem.hasAttribute('expand')) {
-        movieItem.removeAttribute('expand');
-      } else {
-        movieItem.setAttribute('expand', '');
-        setTimeout(() => movieItem.scrollIntoView({ behavior: 'smooth'}), 400);
-      }
-    });
+    movieItem.addEventListener('click', () => this.handleClickOnMovieItem(movieItem));
     (<any>movieItem).movieData = itemData;
     return movieItem;
+  }
+
+  handleClickOnMovieItem(movieItem) {
+    // it might be the case that there's another one expanded or not so we have to account for that
+    const currentExpandedItem = this.shadowRoot.querySelector('movie-list-item[expand]');
+    const isCurrentItemExpanded = movieItem.hasAttribute('expand');
+
+    if (currentExpandedItem && currentExpandedItem !== movieItem) {
+      currentExpandedItem.removeAttribute('expand');
+    }
+
+    movieItem.toggleAttribute('expand');
+
+    setTimeout(() => {
+      this.scrollToItem(movieItem, isCurrentItemExpanded);
+    }, 210); // gotta account for delays from movie items' transitions
+  }
+
+  scrollToItem(movieItem, isCurrentlyExpanded) {
+    if(!isCurrentlyExpanded){
+      const top = window.scrollY + movieItem.getBoundingClientRect().top - 70;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
   }
 
   render() {
