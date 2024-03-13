@@ -1,3 +1,4 @@
+import { IMovie } from 'src/app/models/movie.model.js';
 import { MovieService } from '../../services/movie.service.js';
 import { throttle } from '../../shared/helpers.js';
 
@@ -18,7 +19,6 @@ template.innerHTML = `
         }
         movie-list-item {
           display: flex;
-          max-width: 600px;
         }
         h1 {
           padding: 10px 20px;
@@ -47,6 +47,8 @@ template.innerHTML = `
           margin-top: 0;
           margin-bottom: 0;
           padding-bottom: 20px;
+          padding-left: 10px;
+          padding-right: 10px;
         }
         #homepage {
           background: #FCF5E5;
@@ -175,28 +177,43 @@ export class HomePage extends HTMLElement {
     this._movieService.movies.forEach(movie => {
       if (!currentItems.includes(movie.id)) {
         // Append only new movies
-        const movieItem = document.createElement('movie-list-item');
-        movieItem.setAttribute('data-id', movie.id);
-        (<any>movieItem).movieData = {
-          ...movie,
-          genres: movie.genreIds.map(genreId => this._movieService.genreMap.get(genreId))
-        };
+        const movieItem = this.createAndSetupNewMovieListItem(movie);
         moviesList.appendChild(movieItem);
       }
     });
   }
 
-  render() {
-    const items = this._movieService.movies.map(movie => ({
+  // creates a new movie-list-item and setups its data and event listeners
+  createAndSetupNewMovieListItem(movie: IMovie) {
+    let movieItem = document.createElement('movie-list-item');
+    const itemData = {
       ...movie,
       genres: movie.genreIds.map(genreId => this._movieService.genreMap.get(genreId))
-    }));
+    }
+    movieItem.setAttribute('data-id', itemData.id);
+    movieItem.addEventListener('click', (event) => {
+      // check if we have a list item open, then we need to close it
+      const expandedEl = this.shadowRoot.querySelector('movie-list-item[expand]');
+      if(expandedEl && expandedEl.getAttribute('data-id') !== itemData.id) {
+        expandedEl.removeAttribute('expand');
+      }
+      if(movieItem.hasAttribute('expand')) {
+        movieItem.removeAttribute('expand');
+      } else {
+        movieItem.setAttribute('expand', '');
+        setTimeout(() => movieItem.scrollIntoView({ behavior: 'smooth'}), 400);
+      }
+    });
+    (<any>movieItem).movieData = itemData;
+    return movieItem;
+  }
+
+  render() {
+    const movies = this._movieService.movies;
     const itemListFragment = document.createDocumentFragment();
 
-    items.map(item => {
-      const movieItem = document.createElement('movie-list-item');
-      movieItem.setAttribute('data-id', item.id);
-      (<any>movieItem).movieData = item;
+    movies.map(movie => {
+      const movieItem = this.createAndSetupNewMovieListItem(movie);
       itemListFragment.appendChild(movieItem);
     });
 
