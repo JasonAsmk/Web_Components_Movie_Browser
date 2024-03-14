@@ -7,7 +7,7 @@
   "scripts": {
     "test": "npx jest",
     "clean": "rm -rf dist/*",
-    "cp:static-files": "cp src/index.html dist/index.html && cp -R src/static/ dist/static/ && cp -R src/assets/ dist/assets/",
+    "cp:static-files": "mkdir -p dist/ && cp src/index.html dist/index.html && cp -R src/static/ dist/static/ && cp -R src/assets/ dist/assets/",
     "build:once": "npm run clean && npm run cp:static-files && tsc",
     "watch-ts": "npm run clean && npm run cp:static-files && tsc --watch",
     "serve": "node server.cjs",
@@ -19,7 +19,7 @@
     "url": "git+https://github.com/JasonAsmk/Frontend-MovieRama-IasonAsimakopoulos.git"
   },
   "author": "Iason Asimakopoulos",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/JasonAsmk/Frontend-MovieRama-IasonAsimakopoulos/issues"
   },
