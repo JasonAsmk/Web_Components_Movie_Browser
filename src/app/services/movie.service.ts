@@ -77,7 +77,7 @@ export class MovieService extends AbstractSingleton<MovieService> {
     const maybeTrailer = youtubeVideos.find(yv => yv.videoType === VideoType.Trailer);
     if(maybeTrailer)
       return maybeTrailer;
-    else return youtubeVideos[0]; // whatever anything will do I guess
+    else return youtubeVideos[0]; // any video is ok
   }
 
   public async getSimilarMoviesForMovie(movieId: string): Promise<IMoviePreview[]> {

@@ -99,6 +99,7 @@ export class MovieReview extends HTMLElement {
           max-height: 50px;
           overflow-y: scroll;
           padding: 0 20px;
+          font-style: italic;
          }
          .name-and-avatar {
           display: flex;
@@ -107,8 +108,10 @@ export class MovieReview extends HTMLElement {
           margin-left: 10px;
          }
          .name {
-          font-size: 12px;
+          font-size: 13px;
           font-style: bold;
+          color: #900C3F;
+          text-transform: capitalize;
          }
          .avatar {
           width: 20px;

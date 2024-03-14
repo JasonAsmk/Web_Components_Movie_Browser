@@ -15,4 +15,4 @@ app.use((req, res, next) => {
     res.status(404).sendFile(path.resolve(__dirname, "dist", "static", '404.html'));
 });
 
-app.listen(process.env.PORT || 4005, () => console.log("server running on port ${process.env.PORT || 4005}"))
+app.listen(process.env.PORT || 4005, () => console.log(`server running on port ${process.env.PORT || 4005} http://localhost:4005`))

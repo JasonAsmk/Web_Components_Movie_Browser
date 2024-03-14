@@ -46,7 +46,7 @@ export class MovieListItem extends HTMLElement {
 
   // don't forget to declare a new attribute in the observedAttributes getter above or it won't work
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === 'expand') {
+    if (name === 'expand' && this.movieData?.id) {
       this.toggleExpansion();
     }
   }
@@ -91,20 +91,19 @@ export class MovieListItem extends HTMLElement {
   render() {
     let listContent;
     if (!this._movieData) {
+      // unused for now :/
       listContent = `
       <li class="skeleton flex-container">
           <div class="left-side-container">
             <div class="skeleton-poster"></div>
           </div>
           <div class="right-side-container">
-            <div>
-              <div class="skeleton-title"></div>
-              <div class="skeleton-body">
-                <div class="skeleton-line"></div>
-                <div class="skeleton-line"></div>
-                <div class="skeleton-line"></div>
-              </p>
-            </div>
+            <div class="skeleton-title"></div>
+            <div class="skeleton-body">
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line"></div>
+            </p>
           </div>
       </div>`;
     } else {
@@ -116,7 +115,7 @@ export class MovieListItem extends HTMLElement {
       let poster;
       if(this._movieData.posterUrl) {
         const imageUrl = this._imageCDNUrl + this._movieData.posterUrl;
-        poster = `<img src="${imageUrl}" class="poster"/>`
+        poster = `<img src="${imageUrl}" style="opacity:0" class="poster"/>`
       } else {
         poster = `<div class="no-image poster">No image</div>`
       }
@@ -150,7 +149,7 @@ export class MovieListItem extends HTMLElement {
           border-radius: 8px;
           width: 100%;
 
-          transition: max-width 0.2s ease-in, height 0.2s ease-in;
+          transition: max-width 0.2s ease-in, height 0.2s ease-in, opacity 0.1s ease-in;
           height: 157px;
           max-width: 600px;
         }
@@ -164,10 +163,9 @@ export class MovieListItem extends HTMLElement {
           transform: scale3d(1.1, 1.1, 1);
         }
         :host([expand]) {
-          min-height: 75vh;
           height: 100%;
           width: 100%;
-          max-width: 100%;
+          max-width: min(100%, 1200px);
         }
         .flex-container {
           width: 100%;
@@ -252,23 +250,28 @@ export class MovieListItem extends HTMLElement {
           gap: 3px;
         }
         .skeleton {
-          min-width: 600px;
           height: 157px;
+          flex-direction: row;
         }
         .skeleton-poster {
           width: 90px;
           height: 135px;
           border-radius: 10px;
           background-color: #E5E4E2	;
+          margin-left: 12px;
+          margin-top: 12px;
         }
-
+        .skeleton .right-side-container {
+          width: 100%;
+        }
         .skeleton-title,
         .skeleton-body {
-          width: 478px;
+          margin-left: 10px;
         }
         .skeleton-title {
           height: 20px;
           margin-top: 12px;
+          margin-right: 20px;
           background-color: #E5E4E2	;
         }
         .skeleton-body {
@@ -276,18 +279,18 @@ export class MovieListItem extends HTMLElement {
           display: flex;
           flex-direction: column;
           gap: 7px;
-          margin-top: 10px;
+          margin-right: 20px;
         }
         .skeleton-line {
           height: 12px;
           background-color: #E5E4E2	;
         }
         .skeleton-line:last-of-type {
-          width: 350px;
+          width: calc(100% - 60px);
         }
         .expansion-container {
           display: flex;
-          padding: 0 10px;
+          padding: 0 10px 20px;
           gap: 10px;
         }
         .similar-and-reviews {
@@ -317,6 +320,15 @@ export class MovieListItem extends HTMLElement {
         ${listContent}
       </li>
     `;
+
+    // fade in posters
+    requestAnimationFrame(() => {
+      const posters = this.shadowRoot.querySelectorAll('.poster');
+      posters.forEach((poster: any, index) => {
+        poster.style.transition = `opacity 0.3s ease-in`;
+        poster.style.opacity = '1';
+      });
+    });
   }
 }
 

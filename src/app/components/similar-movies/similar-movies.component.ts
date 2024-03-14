@@ -61,7 +61,6 @@ export class SimilarMovies extends HTMLElement {
         :host {
           min-width: 0;
           overflow-x: scroll;
-          height: 134px;
           min-width: 54px;
           transition: opacity 0.1s ease-in;
         }
@@ -82,7 +81,6 @@ export class SimilarMovies extends HTMLElement {
         .flex-container {
           display: flex;
           gap: 5px;
-          height: 124px;
         }
         .movie-preview {
           width: 54px;
@@ -108,6 +106,7 @@ export class SimilarMovies extends HTMLElement {
       </div>
     `;
 
+    // fade in posters
     requestAnimationFrame(() => {
       const posters = this.shadowRoot.querySelectorAll('.poster');
       posters.forEach((poster: any, index) => {

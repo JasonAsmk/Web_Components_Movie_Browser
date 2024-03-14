@@ -24,6 +24,7 @@ template.innerHTML = `
           padding: 10px 20px;
           width: 187px;
           margin: 0;
+          cursor: pointer;
         }
         .header {
           z-index: 1;
@@ -109,28 +110,44 @@ export class HomePage extends HTMLElement {
     window.addEventListener('scroll', this.onScroll(), { passive: true });
 
     this.render();
-
-    this.attachHostEventListeners();
   }
 
   attachHostEventListeners() {
-    // attaching some events to host element, so that we don't have to
-    // redo this allover after a full render
-    this.addEventListener('search', async (event: CustomEvent) => {
-      let query = event?.detail?.query?.trim();
-      if(query === this.searchQuery) return;
-      if(query)
-        this.searchForMovies(event.detail.query);
-      else {
-        this.searchQuery = '';
-        await this.resetToNowPlaying();
-        this.render();
-      }
-    });
+    // register search and header click events
+    this.addEventListener('search', this.searchEventHandler.bind(this));
+
+    const headerTitle = this.shadowRoot.querySelector('.header h1');
+    if (headerTitle) {
+      headerTitle.addEventListener('click', this.headerClickEventHandler.bind(this))
+    }
+  }
+
+  async searchEventHandler(event: CustomEvent) {
+    let query = event?.detail?.query?.trim();
+    if(query === this.searchQuery) return;
+    if(query)
+      this.searchForMovies(event.detail.query);
+    else {
+      this.searchQuery = '';
+      await this.resetToNowPlaying();
+      this.render();
+    }
+  }
+
+  async headerClickEventHandler() {
+    window.scroll(0,0);
+    if (this.searchQuery) {
+      this.searchQuery = '';
+      await this.resetToNowPlaying();
+      this.render();
+    }
   }
 
   disconnectedCallback() {
+    // release event listeners
     window.removeEventListener('scroll', this.onScroll(), false);
+    this.removeEventListener('search', this.searchEventHandler.bind(this));
+    this.shadowRoot.querySelector('.header h1')?.removeEventListener('click', this.headerClickEventHandler.bind(this));
   }
 
   onScroll() {
@@ -140,7 +157,7 @@ export class HomePage extends HTMLElement {
       if (distanceFromBottom < 200) {
         this.loadMoreItems();
       }
-    }, 300);
+    }, 800);
   }
 
   async loadMoreItems() {
@@ -178,6 +195,7 @@ export class HomePage extends HTMLElement {
     await this._movieService.getChunkOfNowPlayingMovies();
   }
 
+  // update movie list dynamically, adding new elements to the scroll view
   updateRenderedMovieList() {
     const moviesList = this.shadowRoot.getElementById('moviesList');
     const currentItems: string[] = Array.from(moviesList.children).map(child => child.getAttribute('data-id'));
@@ -204,6 +222,7 @@ export class HomePage extends HTMLElement {
     return movieItem;
   }
 
+  // when a list item is clicked, it expands
   handleClickOnMovieItem(movieItem) {
     // it might be the case that there's another one expanded or not so we have to account for that
     const currentExpandedItem = this.shadowRoot.querySelector('movie-list-item[expand]');
@@ -242,6 +261,8 @@ export class HomePage extends HTMLElement {
 
     const moviesList = this.shadowRoot.getElementById('moviesList');
     moviesList.appendChild(itemListFragment);
+
+    this.attachHostEventListeners();
   }
 }
 
