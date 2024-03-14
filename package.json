@@ -40,6 +40,7 @@
     "typescript": "^5.4.2"
   },
   "dependencies": {
+    "@types/dompurify": "^3.0.5",
     "default-passive-events": "^2.0.0"
   }
 }

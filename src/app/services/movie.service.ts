@@ -1,5 +1,6 @@
 import { appConfig } from '../app.config.js';
 import { IMovie, IMoviePreview } from '../models/movie.model.js';
+import { IMovieReview } from '../models/review.model.js';
 import { IVideo, VideoProvider, VideoType } from '../models/video.model.js';
 import { AbstractSingleton } from '../shared/abstract-singleton.js';
 import { MovieApiService } from './movie-api.service.js';
@@ -85,6 +86,14 @@ export class MovieService extends AbstractSingleton<MovieService> {
     if(!similarMovies || similarMovies.length === 0) return [];
 
     return similarMovies.slice(0, appConfig.maximumSimilarMovies ?? 3);
+  }
+
+  public async getReviewsForMovie(movieId: string): Promise<IMovieReview[]> {
+    if(!movieId) return [];
+    const reviews: IMovieReview[] = await this._movieApiService.getReviewsForMovie(movieId);
+    if(!reviews || reviews.length === 0) return [];
+
+    return reviews.slice(0, appConfig.maximumReviews ?? 1);
   }
 
   private clearPagingStates() {

@@ -74,9 +74,18 @@ export class MovieListItem extends HTMLElement {
     (<any>videoPreview).providerData = { provider: youbuteVideo.videoProvider, resourceId: youbuteVideo.key };
     expansionContainer.appendChild(videoPreview);
 
+    const divEl = document.createElement('div');
+    divEl.classList.add('similar-and-reviews');
+
     const similarMovies = document.createElement('similar-movies');
     (<any>similarMovies).setAttribute('movie-id', this._movieData.id);
-    expansionContainer.appendChild(similarMovies);
+    divEl.appendChild(similarMovies);
+
+    const reviews = document.createElement('movie-review');
+    (<any>reviews).setAttribute('movie-id', this._movieData.id);
+    divEl.appendChild(reviews);
+
+    expansionContainer.appendChild(divEl);
   }
 
   render() {
@@ -155,10 +164,10 @@ export class MovieListItem extends HTMLElement {
           transform: scale3d(1.1, 1.1, 1);
         }
         :host([expand]) {
-          height: 75vh;
+          min-height: 75vh;
+          height: 100%;
           width: 100%;
           max-width: 100%;
-
         }
         .flex-container {
           width: 100%;
@@ -280,6 +289,28 @@ export class MovieListItem extends HTMLElement {
           display: flex;
           padding: 0 10px;
           gap: 10px;
+        }
+        .similar-and-reviews {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          min-width: 0;
+        }
+        video-preview {
+          flex-shrink: 0;
+          width: 400px;
+          height: 235px;
+        }
+        @media only screen and (max-width: 600px) {
+          .expansion-container {
+            flex-wrap: wrap;
+          }
+          video-preview {
+            margin: auto;
+            flex-shrink: 0;
+            width: 280px;
+            height: 165px;
+          }
         }
       </style>
       <li>

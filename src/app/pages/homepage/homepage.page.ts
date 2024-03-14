@@ -53,11 +53,17 @@ template.innerHTML = `
         }
         #homepage {
           background: #FCF5E5;
-          height: 100vh;
         }
         .flex-container {
           display: flex;
           flex-wrap: wrap;
+        }
+
+        @media only screen and (max-width: 600px) {
+          h1 {
+            width: 150px;
+            font-size: 1.5em;
+          }
         }
       </style>
 

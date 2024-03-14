@@ -12,6 +12,7 @@ jest.mock('../app.config', () => ({
   }
 }));
 
+
 describe('MovieApi::Service', () => {
   beforeEach(() => {
     (fetch as jest.Mock).mockClear();
@@ -146,5 +147,40 @@ describe('MovieApi::Service', () => {
     expect(movies.length).toBe(1);
     expect(movies[0].title).toEqual('Tremors: Texas Ranger edition');
     expect(movies[0].id).toEqual('1');
+  });
+
+  it('fetches reviews', async () => {
+    (fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          results: [
+            {
+              id: '1',
+              author_details: {
+                name: 'Iasonas',
+                username: 'jasonasmk',
+                rating: 9.9,
+                avatar_path: 'prettyguy.jpg'
+              },
+              content: 'Would watch again for sho!'
+            }
+          ]
+        })
+    });
+
+    const movieApiService = MovieApiService.getInstance();
+
+    // kinda hacky
+    jest.spyOn(<any>movieApiService, 'sanitizeString').mockImplementation(x => x);
+
+    const reviews = await movieApiService.getReviewsForMovie('1');
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(reviews.length).toBe(1);
+    expect(reviews[0].username).toEqual('jasonasmk');
+    expect(reviews[0].content).toEqual('Would watch again for sho!');
+    expect(reviews[0].rating).toEqual('9.9');
+    expect(reviews[0].name).toEqual('Iasonas');
   });
 });

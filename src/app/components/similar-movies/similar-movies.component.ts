@@ -20,9 +20,6 @@ export class SimilarMovies extends HTMLElement {
 
   connectedCallback() {
     this.upgradeProperty('movie-id');
-
-    // // start hidden so we have some time to load images before showing
-    // this.style.opacity = '0';
   }
 
   // if a user sets a property before the element is loaded

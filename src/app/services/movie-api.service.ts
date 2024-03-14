@@ -1,7 +1,9 @@
 import { appConfig } from '../app.config.js';
 import { IMovie, IMoviePreview } from '../models/movie.model.js';
+import { IMovieReview } from '../models/review.model.js';
 import { IVideo, VideoProvider, VideoType } from '../models/video.model.js';
 import { AbstractSingleton } from '../shared/abstract-singleton.js';
+
 
 export class MovieApiService extends AbstractSingleton<MovieApiService> {
   private _baseUrl;
@@ -121,6 +123,36 @@ export class MovieApiService extends AbstractSingleton<MovieApiService> {
     }
   }
 
+  public async getReviewsForMovie(movieId: string): Promise<IMovieReview[]> {
+    const endpoint = this._baseUrl + `movie/${movieId}/reviews?api_key=${this._apiKey}`;
+    try {
+      const response = await fetch(endpoint);
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+      const data = await response.json();
+      return data.results.map((serverReview: any) => ({
+        id: serverReview.id + '',
+        name: this.sanitizeString(serverReview.author_details?.name),
+        username: this.sanitizeString(serverReview.author_details?.username),
+        content: this.cleanupReview(this.sanitizeString(serverReview.content)),
+        rating: serverReview.author_details?.rating + '',
+        avatarPath: serverReview.author_details?.avatar_path
+      }));
+    } catch (error) {
+      console.error('Could not fetch reviews: ', error);
+      return [];
+    }
+  }
+
+  private sanitizeString(s: string) {
+    return window.DOMPurify.sanitize(s);
+  }
+
+  private cleanupReview(s: string) {
+    // too many underscores in review content for some reason
+    return s.split('_').join("");
+  }
 
   private mapServerToLocalVideoType(videoType: string): VideoType {
     switch(videoType) {

@@ -29,13 +29,11 @@ export class VideoPreview extends HTMLElement {
 
 
   renderYoutube() {
-    // eh ratios and stuff https://codegena.com/generator/Youtube-Embed-Code-Generator/
-    const width = '400';
-    const height= '235';
+    // look for ratios and stuff https://codegena.com/generator/Youtube-Embed-Code-Generator/
     const iframe = document.createElement('iframe');
     iframe.setAttribute('src', `https://www.youtube.com/embed/${this._providerResourceId}`);
-    iframe.setAttribute('width', width);
-    iframe.setAttribute('height', height);
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
     iframe.style.border = 'none';
     this.shadowRoot.appendChild(iframe);
   }

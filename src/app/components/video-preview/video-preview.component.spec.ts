@@ -50,8 +50,8 @@ describe('VideoPreview::Component', () => {
 
       expect(iframe).not.toBeNull();
       expect(iframe.src).toContain('youtube.com/embed/abc123');
-      expect(iframe.width).toBe('400');
-      expect(iframe.height).toBe('235');
+      expect(iframe.style.width).toBe('100%');
+      expect(iframe.style.height).toBe('100%');
     });
   });
 });

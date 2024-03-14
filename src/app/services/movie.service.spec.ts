@@ -1,3 +1,4 @@
+import { appConfig } from '../app.config';
 import { VideoProvider, VideoType } from '../models/video.model';
 import { MovieService } from './movie.service';
 
@@ -38,11 +39,19 @@ jest.mock('./movie-api.service', () => {
       ])
     ),
     getVideoDataForMovie: jest.fn().mockResolvedValue([]),
-    getSimilarMoviesForMovie: jest.fn().mockResolvedValue([])
+    getSimilarMoviesForMovie: jest.fn().mockResolvedValue([]),
+    getReviewsForMovie: jest.fn().mockResolvedValue([])
   })
 
   return { MovieApiService: mockObj };
 });
+
+appConfig; // need to import this for jest.mock but it's no used causing linter hicups :(
+jest.mock("../app.config.js", () => ({
+  appConfig: {
+    maximumReviews: 2
+  }
+}));
 
 describe('Movie::Service', () => {
   let sut: MovieService;
@@ -170,7 +179,7 @@ describe('Movie::Service', () => {
       expect(res).toEqual([]);;
     });
 
-    it('returns ', async () => {
+    it('returns results for a movie id', async () => {
       const mockMovieApiService = (<any>sut)._movieApiService;
       jest.spyOn(mockMovieApiService, 'getSimilarMoviesForMovie').mockResolvedValue(Promise.resolve([
         { id: '3', title: 'Children of the popcorn', posterUrl: 'abcdef.jpg' },
@@ -180,6 +189,30 @@ describe('Movie::Service', () => {
       expect(res).toEqual([
         { id: '3', title: 'Children of the popcorn', posterUrl: 'abcdef.jpg' },
         { id: '4', title: 'The pastel colour out of space', posterUrl: 'hijklm.jpg' }
+      ]);;
+    });
+  });
+
+  describe('getReviewsForMovie', () => {
+    it('returns empty array for no movie id', async () => {
+      const res = await sut.getReviewsForMovie('');
+      expect(res).toEqual([]);;
+
+    });
+
+    it('returns reviews for a movie id, up to a limit', async () => {
+      const mockMovieApiService = (<any>sut)._movieApiService;
+      jest.spyOn(mockMovieApiService, 'getReviewsForMovie').mockResolvedValue(Promise.resolve([
+        { id: '1', name: 'Jason', username: 'jasonasmk', content: 'Best movie', rating: 9, avatarPath: '/image1.jpg'},
+        { id: '2', name: 'Ollie', username: 'hoobeard', content: 'A bit predictable!', rating: 7, avatarPath: '/image2.jpg'},
+        { id: '3', name: 'Mary', username: 'onlymoovies', content: 'A big nope from me!', rating: 2, avatarPath: '/image3.jpg'},
+      ]));
+
+      const res = await sut.getReviewsForMovie('3');
+      expect(res.length).toEqual(2);
+      expect(res).toEqual([
+        { id: '1', name: 'Jason', username: 'jasonasmk', content: 'Best movie', rating: 9, avatarPath: '/image1.jpg'},
+        { id: '2', name: 'Ollie', username: 'hoobeard', content: 'A bit predictable!', rating: 7, avatarPath: '/image2.jpg'}
       ]);;
     });
   });
