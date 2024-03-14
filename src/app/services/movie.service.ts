@@ -1,4 +1,5 @@
-import { IMovie } from '../models/movie.model.js';
+import { appConfig } from '../app.config.js';
+import { IMovie, IMoviePreview } from '../models/movie.model.js';
 import { IVideo, VideoProvider, VideoType } from '../models/video.model.js';
 import { AbstractSingleton } from '../shared/abstract-singleton.js';
 import { MovieApiService } from './movie-api.service.js';
@@ -76,6 +77,14 @@ export class MovieService extends AbstractSingleton<MovieService> {
     if(maybeTrailer)
       return maybeTrailer;
     else return youtubeVideos[0]; // whatever anything will do I guess
+  }
+
+  public async getSimilarMoviesForMovie(movieId: string): Promise<IMoviePreview[]> {
+    if(!movieId) return [];
+    const similarMovies: IMoviePreview[] = await this._movieApiService.getSimilarMoviesForMovie(movieId);
+    if(!similarMovies || similarMovies.length === 0) return [];
+
+    return similarMovies.slice(0, appConfig.maximumSimilarMovies ?? 3);
   }
 
   private clearPagingStates() {

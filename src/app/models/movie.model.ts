@@ -7,3 +7,5 @@ export interface IMovie {
   voteAverage: number;
   overview: string;
 }
+
+export type IMoviePreview = Pick<IMovie, 'id' | 'posterUrl' | 'title'>;

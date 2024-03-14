@@ -6,7 +6,7 @@ import { Searchbar } from './searchbar.component.js';
 
 jest.useFakeTimers();
 
-describe('Searchbar', () => {
+describe('Searchbar::Component', () => {
   let element;
 
   beforeEach(() => {

@@ -5,7 +5,7 @@
 import { VideoProvider } from "../../models/video.model";
 import { VideoPreview } from './video-preview.component';
 
-describe('VideoPreview', () => {
+describe('VideoPreview::Component', () => {
   let element;
 
   beforeEach(() => {

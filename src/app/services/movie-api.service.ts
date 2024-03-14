@@ -1,5 +1,5 @@
 import { appConfig } from '../app.config.js';
-import { IMovie } from '../models/movie.model.js';
+import { IMovie, IMoviePreview } from '../models/movie.model.js';
 import { IVideo, VideoProvider, VideoType } from '../models/video.model.js';
 import { AbstractSingleton } from '../shared/abstract-singleton.js';
 
@@ -98,6 +98,25 @@ export class MovieApiService extends AbstractSingleton<MovieApiService> {
       }));
     } catch (error) {
       console.error(`Could not fetch video links for movie id ${movieId}: `, error);
+      return [];
+    }
+  }
+
+  public async getSimilarMoviesForMovie(movieId: string): Promise<IMoviePreview[]> {
+    const endpoint = this._baseUrl + `movie/${movieId}/similar?api_key=${this._apiKey}`;
+    try {
+      const response = await fetch(endpoint);
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+      const data = await response.json();
+      return data.results.map((serverMovie: any) => ({
+        id: serverMovie.id + '',
+        posterUrl: serverMovie.poster_path,
+        title: serverMovie.title,
+      }));
+    } catch (error) {
+      console.error('Could not fetch movies: ', error);
       return [];
     }
   }

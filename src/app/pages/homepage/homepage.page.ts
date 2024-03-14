@@ -53,6 +53,7 @@ template.innerHTML = `
         }
         #homepage {
           background: #FCF5E5;
+          height: 100vh;
         }
         .flex-container {
           display: flex;

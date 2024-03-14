@@ -73,6 +73,10 @@ export class MovieListItem extends HTMLElement {
     const videoPreview = document.createElement('video-preview');
     (<any>videoPreview).providerData = { provider: youbuteVideo.videoProvider, resourceId: youbuteVideo.key };
     expansionContainer.appendChild(videoPreview);
+
+    const similarMovies = document.createElement('similar-movies');
+    (<any>similarMovies).setAttribute('movie-id', this._movieData.id);
+    expansionContainer.appendChild(similarMovies);
   }
 
   render() {
@@ -95,7 +99,8 @@ export class MovieListItem extends HTMLElement {
           </div>
       </div>`;
     } else {
-      const yearOfRelease = new Date(this._movieData.releaseDate).getFullYear();
+      const parsedYear = new Date(this._movieData.releaseDate).getFullYear();
+      const yearOfRelease = isNaN(parsedYear) ? '' : (parsedYear + '');
       const genres = this._movieData.genres.map(genre => `<div class="genre">${genre}</div>`).join('');
       const roundedAverage = Math.round(this._movieData.voteAverage * 10) / 10;
 
@@ -115,7 +120,7 @@ export class MovieListItem extends HTMLElement {
             </div>
             <div class="right-side-container">
               <div>
-                <h2>${this._movieData.title} <span class="year-of-release">(${yearOfRelease})</span></h2>
+                <h2>${this._movieData.title} <span class="year-of-release">${yearOfRelease ? '(' + yearOfRelease + ')' : '' }</span></h2>
                 <p>${this._movieData.overview}</p>
               </div>
               <div class="extra-info-container">
@@ -142,6 +147,8 @@ export class MovieListItem extends HTMLElement {
         }
         li {
           transition: transform 0.1s ease-in;
+        }
+        :host(:not([expand])) li {
           cursor: pointer;
         }
         :host(:not([expand])) li:hover {
@@ -272,6 +279,7 @@ export class MovieListItem extends HTMLElement {
         .expansion-container {
           display: flex;
           padding: 0 10px;
+          gap: 10px;
         }
       </style>
       <li>

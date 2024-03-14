@@ -19,7 +19,7 @@ jest.mock('../../services/movie.service', () => {
 });
 
 
-describe('HomePage', () => {
+describe('HomePage::Page', () => {
   let element;
   let mockMovieService;
 

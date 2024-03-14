@@ -37,7 +37,8 @@ jest.mock('./movie-api.service', () => {
         [3, 'Thriller']
       ])
     ),
-    getVideoDataForMovie: jest.fn().mockResolvedValue([])
+    getVideoDataForMovie: jest.fn().mockResolvedValue([]),
+    getSimilarMoviesForMovie: jest.fn().mockResolvedValue([])
   })
 
   return { MovieApiService: mockObj };
@@ -161,6 +162,25 @@ describe('Movie::Service', () => {
       const res = await sut.getBestMatchVideoDataForMovie('123');
       expect(res.name).toEqual('best video');
     })
-  })
+  });
 
+  describe('getSimilarMoviesForMovie', () => {
+    it('returns empty array for no movie id', async () => {
+      const res = await sut.getSimilarMoviesForMovie('');
+      expect(res).toEqual([]);;
+    });
+
+    it('returns ', async () => {
+      const mockMovieApiService = (<any>sut)._movieApiService;
+      jest.spyOn(mockMovieApiService, 'getSimilarMoviesForMovie').mockResolvedValue(Promise.resolve([
+        { id: '3', title: 'Children of the popcorn', posterUrl: 'abcdef.jpg' },
+        { id: '4', title: 'The pastel colour out of space', posterUrl: 'hijklm.jpg' }
+      ]));
+      const res = await sut.getSimilarMoviesForMovie('3');
+      expect(res).toEqual([
+        { id: '3', title: 'Children of the popcorn', posterUrl: 'abcdef.jpg' },
+        { id: '4', title: 'The pastel colour out of space', posterUrl: 'hijklm.jpg' }
+      ]);;
+    });
+  });
 });

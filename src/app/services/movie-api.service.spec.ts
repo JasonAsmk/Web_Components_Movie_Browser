@@ -12,7 +12,7 @@ jest.mock('../app.config', () => ({
   }
 }));
 
-describe('MovieApiService', () => {
+describe('MovieApi::Service', () => {
   beforeEach(() => {
     (fetch as jest.Mock).mockClear();
     MovieApiService.resetInstance();
@@ -122,5 +122,29 @@ describe('MovieApiService', () => {
     expect(videos[0].key).toEqual('60h6lpnSgck');
     expect(videos[0].videoType).toEqual(VideoType.Featurette);
     expect(videos[0].videoProvider).toEqual(VideoProvider.Youtube);
+  });
+
+  it('fetches similar movies', async () => {
+    (fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          results: [
+            {
+              id: 1,
+              poster_path: '/abcdef123456789.jpg',
+              title: 'Tremors: Texas Ranger edition',
+            }
+          ]
+        })
+    });
+
+    const movieApiService = MovieApiService.getInstance();
+    const movies = await movieApiService.getSimilarMoviesForMovie('1');
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(movies.length).toBe(1);
+    expect(movies[0].title).toEqual('Tremors: Texas Ranger edition');
+    expect(movies[0].id).toEqual('1');
   });
 });

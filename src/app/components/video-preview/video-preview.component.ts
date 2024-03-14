@@ -13,17 +13,6 @@ export class VideoPreview extends HTMLElement {
     this.attachShadow({ mode: 'open' });
   }
 
-  // if a user sets a property before the element is loaded
-  // we need to run through properties set them again after
-  // see https://web.dev/articles/custom-elements-best-practices#make_properties_lazy
-  upgradeProperty(prop) {
-    if(this.hasOwnProperty(prop)) {
-      let value = this[prop];
-      delete this[prop];
-      this[prop] = value;
-    }
-  }
-
   set providerData(data: IVideoProviderData) {
     if(!data || !data.provider || !data.resourceId) return;
     if(this._provider !== data.provider || this._providerResourceId !== data.resourceId) {

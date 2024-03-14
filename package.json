@@ -5,7 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npx jest",
     "clean": "rm -rf dist/*",
     "cp:static-files": "cp src/index.html dist/index.html && cp -R src/static/ dist/static/ && cp -R src/assets/ dist/assets/",
     "build:once": "npm run clean && npm run cp:static-files && tsc",

@@ -4,7 +4,7 @@
 
 import { MovieListItem } from './movie-list-item.component';
 
-describe('MovieListItem', () => {
+describe('MovieListItem::Component', () => {
   beforeEach(() => {
     if (!customElements.get('movie-list-item')) {
       customElements.define('movie-list-item', MovieListItem);
